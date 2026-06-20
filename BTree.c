@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "Sistema.h"
+#define T 4
 
 BTree *criarBTree(void)
 {
@@ -151,5 +152,201 @@ void InserirNaBTree(BTree *bt, Denuncia d)
     }
 }
 
+//Função remover da B-Tree e suas auxiliares
+/* protótipos no topo do ficheiro */
+int EncontrarChaves(NoBTree *no, int id);
+void RemoverDeInterno(NoBTree *no, int id1);
+void RemoverNo(NoBTree *no, int id);
+void Merge(NoBTree *no, int id1);
+void Preencher(NoBTree *no, int id1);
+
+//Auxiliar para encontrar as Chaves
+int EncontrarChaves(NoBTree *no, int id){
+  
+  int id1=0;
+  while (id1 < no->n_chaves && no->dados[id1].id < id)
+      id1++;
+  return id1;
+  
+}
+// Auxiliar para Remover se a chave for folha
+void RemoverDeFolha(NoBTree *no, int id1){
+	int i;
+	for(i=id1+1 ;i< no->n_chaves; i++)
+	no->dados [i-1] = no->dados[i];
+	no->n_chaves--;
+	
+}
+//Auxiliar para obter o antecessor
+Denuncia ObterProdecessor(NoBTree *no, int id1){
+	NoBTree *atual = no->filhos[id1];
+	while(atual->folha)
+	atual = atual->filhos[atual->n_chaves];
+	return atual->dados[atual->n_chaves - 1];
+	
+}
+
+//Auxiliar para obter sucessor
+Denuncia ObterSucessor(NoBTree *no, int id1){
+	NoBTree *atual = no->filhos[id1 +1];
+	while(!atual->folha)
+	atual = atual->filhos[0];
+	return atual->dados[0];
+}
+//Auxiliar para fazer o merge
+void Merge(NoBTree *no, int id1){
+	int i;
+	NoBTree *filho= no->filhos[id1];
+	NoBTree *irmao = no->filhos[id1 +1];
+	
+	filho->dados[T -1] = no->dados[id1];
+	
+	for(i=0; i<irmao->n_chaves; i++)
+	filho->dados[i +T]= irmao->dados[i];
+	
+	if(!filho->folha)
+	 for(i=0; i<= irmao->n_chaves; i++)
+	  filho->filhos[i +T] = irmao->filhos[i];
+	  
+   for(i=id1 +1; i< no->n_chaves; i++)
+     no->dados[i -1] = no->dados[i];
+    
+	for(i= id1+2; i<= no->n_chaves; i++)
+	  no->filhos[i -1] = no->filhos[i];
+	  
+   filho->n_chaves += irmao->n_chaves +1;
+   no->n_chaves--;
+   
+   free(irmao);	  
+}
+
+//Auxiliar para remover uma chave que não é uma folha
+void RemoverDeInterno(NoBTree *no, int id1){
+	int id = no->dados[id1].id;
+	if(no->filhos[id1]->n_chaves>= T){
+		Denuncia pred = ObterProdecessor(no,id1);
+		no->dados[id1] = pred;
+		RemoverNo(no->filhos[id1], pred.id);
+	}
+	
+	else if(no->filhos[id1 +1]->n_chaves>=T){
+		Denuncia suc = ObterSucessor(no,id1);
+	    no->dados[id1] = suc;
+	    RemoverNo(no->filhos[id1 +1], suc.id);
+	}
+	else
+	{
+        Merge(no, id1);
+        RemoverNo(no->filhos[id1], id);
+    }
+}
+
+//Auxiliar para remover um nó
+void RemoverNo(NoBTree *no, int id){
+	int id1 = EncontrarChaves(no, id);
+	if (id1 < no->n_chaves && no->dados[id1].id== id){
+		if(no->folha)
+		RemoverDeFolha(no, id1);
+		else
+		RemoverDeInterno(no, id1);
+		
+	}
+	else{
+		if(no->folha){
+			printf("ID %d nao encontrado.\n", id);
+			return;
+		}
+		int ultimo = (id1 == no->n_chaves);
+		if (no->filhos[id1]->n_chaves< T)
+		 Preencher(no,id1);
+		
+		if( ultimo && id1 > no->n_chaves)
+		 RemoverNo(no->filhos[id1 -1], id);
+	    else
+	     RemoverNo(no->filhos[id1],id);
+	}
+}
+
+
+//Auxiliar para emprestar ao maior a esquerda
+void EmprestarDoAnterior(NoBTree *no, int id1){
+	int i;
+	NoBTree *filho= no->filhos[id1];
+	NoBTree *irmao= no->filhos[id1-1];
+	for (i=filho->n_chaves-1; i>=0;i--)
+	   filho->dados[i+1] = filho->dados[i];
+	
+	if(!filho->folha)
+	 for(i= filho->n_chaves; i>=0; i--)
+	  filho->filhos[i+1] = filho->filhos[i];
+    
+	filho->dados[0] = no->dados[id1 -1];
+	
+	if(!filho->folha)
+	 filho->filhos[0] = irmao->filhos[irmao->n_chaves];
+
+    no->dados[id1 -1] = irmao->dados[irmao->n_chaves -1];
+    
+    filho->n_chaves++;
+    irmao->n_chaves--;
+}
+
+//Auxiliar para emprestar o menor a direita
+void EmprestarSeguinte(NoBTree *no, int id1){
+	int i;
+	NoBTree *filho= no->filhos[id1];
+	NoBTree *irmao= no->filhos[id1 +1];
+	
+	filho->dados[filho->n_chaves]= no->dados[id1];
+	
+	if (!filho->folha)
+	filho->filhos[filho->n_chaves+1] = irmao->filhos[0];
+	
+	no->dados[id1] = irmao->dados[0];
+	
+	for(i=1; i< irmao->n_chaves; i++)
+	irmao->dados[i -1] = irmao->dados[i];
+	
+	if (!irmao->folha)
+	for(i=1; i<= irmao->n_chaves;i++)
+	irmao->filhos[i -1] =irmao->filhos[i];
+	
+	filho->n_chaves++;
+	irmao->n_chaves--;
+}
+
+//Auxiliar para preencher nos que têm apenas uma chave
+void Preencher(NoBTree *no, int id1){
+	if (id1 != 0 && no->filhos[id1 - 1]->n_chaves >= T)
+        EmprestarDoAnterior(no, id1);
+    else if (id1 != no->n_chaves && no->filhos[id1 + 1]->n_chaves >= T)
+        EmprestarSeguinte(no, id1);
+    else
+    {
+        if (id1 != no->n_chaves)
+            Merge(no, id1);
+        else
+            Merge(no, id1 - 1);
+    }
+}
+
+
+//Função Remover
+int RemoverNaBTree(BTree *bt, int id){
+	if(bt->raiz == NULL)
+	  return 0;
+    if (PesquisarNaBTree(bt, id) == NULL){
+    	printf("Denuncia %d nao encontrada.\n", id);
+    	return 0;
+	}
+	RemoverNo(bt->raiz, id);
+	if (bt->raiz->n_chaves == 0 && !bt->raiz->folha){
+		NoBTree *antigaRaiz = bt->raiz;
+		bt->raiz = bt->raiz->filhos[0];
+		free(antigaRaiz);
+	}
+	printf("Denuncia %d removida com sucesso\n", id);
+	return 1;
+}
 
 
