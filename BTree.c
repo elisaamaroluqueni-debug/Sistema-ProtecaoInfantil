@@ -65,7 +65,7 @@ void DividirFilho(NoBTree *x, int i)
     for(j = 0; j < T - 1; j++)
         z->dados[j] = y->dados[j + T];
 
-    // Se n„o for folha, copiar filhos
+    // Se n√£o for folha, copiar filhos
     if(!y->folha)
     {
         for(j = 0; j < T; j++)
@@ -152,8 +152,8 @@ void InserirNaBTree(BTree *bt, Denuncia d)
     }
 }
 
-//FunÁ„o remover da B-Tree e suas auxiliares
-/* protÛtipos no topo do ficheiro */
+//Fun√ß√£o remover da B-Tree e suas auxiliares
+/* prot√≥tipos no topo do ficheiro */
 int EncontrarChaves(NoBTree *no, int id);
 void RemoverDeInterno(NoBTree *no, int id1);
 void RemoverNo(NoBTree *no, int id);
@@ -180,7 +180,7 @@ void RemoverDeFolha(NoBTree *no, int id1){
 //Auxiliar para obter o antecessor
 Denuncia ObterProdecessor(NoBTree *no, int id1){
 	NoBTree *atual = no->filhos[id1];
-	while(atual->folha)
+	while(!atual->folha)
 	atual = atual->filhos[atual->n_chaves];
 	return atual->dados[atual->n_chaves - 1];
 	
@@ -220,7 +220,7 @@ void Merge(NoBTree *no, int id1){
    free(irmao);	  
 }
 
-//Auxiliar para remover uma chave que n„o È uma folha
+//Auxiliar para remover uma chave que n√£o √© uma folha
 void RemoverDeInterno(NoBTree *no, int id1){
 	int id = no->dados[id1].id;
 	if(no->filhos[id1]->n_chaves>= T){
@@ -241,7 +241,7 @@ void RemoverDeInterno(NoBTree *no, int id1){
     }
 }
 
-//Auxiliar para remover um nÛ
+//Auxiliar para remover um n√≥
 void RemoverNo(NoBTree *no, int id){
 	int id1 = EncontrarChaves(no, id);
 	if (id1 < no->n_chaves && no->dados[id1].id== id){
@@ -315,7 +315,7 @@ void EmprestarSeguinte(NoBTree *no, int id1){
 	irmao->n_chaves--;
 }
 
-//Auxiliar para preencher nos que tÍm apenas uma chave
+//Auxiliar para preencher nos que t√™m apenas uma chave
 void Preencher(NoBTree *no, int id1){
 	if (id1 != 0 && no->filhos[id1 - 1]->n_chaves >= T)
         EmprestarDoAnterior(no, id1);
@@ -331,7 +331,7 @@ void Preencher(NoBTree *no, int id1){
 }
 
 
-//FunÁ„o Remover
+//Fun√ß√£o Remover
 int RemoverNaBTree(BTree *bt, int id){
 	if(bt->raiz == NULL)
 	  return 0;
@@ -348,5 +348,27 @@ int RemoverNaBTree(BTree *bt, int id){
 	printf("Denuncia %d removida com sucesso\n", id);
 	return 1;
 }
+// Fun√ß√£o pesquisar
+Denuncia *PesquisarNo(NoBTree *no, int id)
+{
+    int i = 0;
 
+    while(i < no->n_chaves && id > no->dados[i].id)
+        i++;
+
+    if(i < no->n_chaves && no->dados[i].id == id)
+        return &no->dados[i];
+
+    if(no->folha)
+        return NULL;
+
+    return PesquisarNo(no->filhos[i], id);
+}
+Denuncia *PesquisarNaBTree(BTree *bt, int id)
+{
+    if(bt == NULL || bt->raiz == NULL)
+        return NULL;
+
+    return PesquisarNo(bt->raiz, id);
+}
 
