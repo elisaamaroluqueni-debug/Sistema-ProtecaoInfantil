@@ -372,3 +372,11 @@ Denuncia *PesquisarNaBTree(BTree *bt, int id)
     return PesquisarNo(bt->raiz, id);
 }
 
+//Função para imprimir a BTree
+void      ImprimirBTree(BTree *bt){
+	if (bt == NULL || bt->raiz == NULL){
+		printf("Arvore vazia\n");
+		return;
+	}
+	ImprimirNo(bt->raiz);
+}

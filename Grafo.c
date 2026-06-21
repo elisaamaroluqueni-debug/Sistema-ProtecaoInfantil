@@ -61,12 +61,13 @@ void ConectarZonas(Grafo *g, int id_a, int id_b, int peso)
 // Percorre o grafo e imprime as zonas com nível de risco elevado
 void ZonasCriticas(Grafo *g)
 {
+	int i;
     if(g == NULL)
         return;
 
     printf("Zonas Criticas:\n");
 
-    for(int i = 0; i < g->n_zonas; i++)
+    for(i = 0; i < g->n_zonas; i++)
     {
         if(g->zonas[i].nivel_risco >= 7)
         {

@@ -1,11 +1,11 @@
-# Project: Project6
+# Project: Project1
 # Makefile created by Dev-C++ 5.11
 
 CPP      = g++.exe
 CC       = gcc.exe
 WINDRES  = windres.exe
-OBJ      = BTree.o Grafo.o Denuncia.o main.o
-LINKOBJ  = BTree.o Grafo.o Denuncia.o main.o
+OBJ      = BTree.o Denuncia.o Grafo.o main.o Menu.o Utilizadores.o Arquivo.o Historico.o
+LINKOBJ  = BTree.o Denuncia.o Grafo.o main.o Menu.o Utilizadores.o Arquivo.o Historico.o
 LIBS     = -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib" -L"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/lib" -static-libgcc
 INCS     = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include"
 CXXINCS  = -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/x86_64-w64-mingw32/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include" -I"C:/Program Files (x86)/Dev-Cpp/MinGW64/lib/gcc/x86_64-w64-mingw32/4.9.2/include/c++"
@@ -27,11 +27,23 @@ $(BIN): $(OBJ)
 BTree.o: BTree.c
 	$(CC) -c BTree.c -o BTree.o $(CFLAGS)
 
-Grafo.o: Grafo.c
-	$(CC) -c Grafo.c -o Grafo.o $(CFLAGS)
-
 Denuncia.o: Denuncia.c
 	$(CC) -c Denuncia.c -o Denuncia.o $(CFLAGS)
 
+Grafo.o: Grafo.c
+	$(CC) -c Grafo.c -o Grafo.o $(CFLAGS)
+
 main.o: main.c
 	$(CC) -c main.c -o main.o $(CFLAGS)
+
+Menu.o: Menu.c
+	$(CC) -c Menu.c -o Menu.o $(CFLAGS)
+
+Utilizadores.o: Utilizadores.c
+	$(CC) -c Utilizadores.c -o Utilizadores.o $(CFLAGS)
+
+Arquivo.o: Arquivo.c
+	$(CC) -c Arquivo.c -o Arquivo.o $(CFLAGS)
+
+Historico.o: Historico.c
+	$(CC) -c Historico.c -o Historico.o $(CFLAGS)

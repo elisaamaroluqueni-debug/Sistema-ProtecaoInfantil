@@ -93,3 +93,11 @@ void RegistarDenuncia(BTree *bt, Grafo *g, Historico **hist, Denuncia d);
 
 // Função para executar o menu
 void MenuExecutar(BTree *bt, Grafo *g, Historico **hist, NoUtilizador **utilizadores);
+
+// Funções para ficheiros
+void GuardarDenuncias(BTree *bt, const char *nome_ficheiro);
+void CarregarDenuncias(BTree *bt, const char *nome_ficheiro);
+void GuardarZonas(Grafo *g, const char *nome_ficheiro);
+void CarregarZonas(Grafo *g, const char *nome_ficheiro);
+void GuardarUtilizadores(NoUtilizador *lista, const char *nome_ficheiro);
+NoUtilizador *CarregarUtilizadores(const char *nome_ficheiro);
