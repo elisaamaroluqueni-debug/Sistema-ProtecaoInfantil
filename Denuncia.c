@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "Sistema.h"
 
-// FunÃ§Ã£o registrar Denuncia
+// Função registrar Denuncia
 
 void RegistarDenuncia(BTree *bt,
                       Grafo *g,
@@ -11,7 +11,7 @@ void RegistarDenuncia(BTree *bt,
 {
     int i;
 
-    /* Inserir denÃºncia na B-Tree */
+    /* Inserir denúncia na B-Tree */
     InserirNaBTree(bt, d);
 
     /* Procurar a zona correspondente */
@@ -21,7 +21,7 @@ void RegistarDenuncia(BTree *bt,
         {
             g->zonas[i].n_casos++;
 
-            /* AtualizaÃ§Ã£o simples do nÃ­vel de risco */
+            /* Atualização simples do nível de risco */
             if(g->zonas[i].n_casos >= 10)
                 g->zonas[i].nivel_risco = 3;
             else if(g->zonas[i].n_casos >= 5)
@@ -33,14 +33,8 @@ void RegistarDenuncia(BTree *bt,
         }
     }
 
-    /* Registar o primeiro estado no histÃ³rico */
-    AdicionarHistorico(
-        hist,
-        d.id,
-        "Nenhum",
-        d.estado,
-        d.data
-    );
+    /* Registar o primeiro estado no histórico */
+    AdicionarHistorico(hist,d.id,"Nenhum", d.estado, d.data );
 
     printf("Denuncia registada com sucesso!\n");
 }

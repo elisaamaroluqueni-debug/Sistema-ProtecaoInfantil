@@ -18,37 +18,132 @@ void MenuExecutar(BTree *bt, Grafo *g, Historico **hist, NoUtilizador **utilizad
         printf("7. Resolver Denuncia Resolvida \n");
         printf("8. Gerir utilizadores \n");
         printf("0. Sair \n");
+        printf("Opcao:\n");
 
         scanf("%d", &op);
 
         switch (op)
         {
             case 1:
-                break;
+            {
+            	Denuncia d;
+            	printf("ID:");
+            	scanf("%d", &d.id);
+            	printf("Descricao:");
+            	scanf("%[^\n]", &d.descricao);
+            	printf("Zona:");
+            	scanf("%[^\n]", &d.zona);
+            	printf("Gravidade (1-5):");
+            	scanf("%d", &d.gravidade);
+            	printf("Data (DD/MM/AAAA):");
+                scanf("%[^\n]", &d.data);
+                strcpy(d.estado, "pendente");
+                
+                RegistarDenuncia(bt, g, hist, d);
+           	 break;
+			}
+             
 
             case 2:
-                break;
+            {
+            	int id;
+            	printf("ID da denuncia: ");
+            	scanf("%d", &id);
+            	
+            	Denuncia *d = PesquisarNaBTree(bt, id);
+            	if(d!= NULL){
+            		printf("\n--- DENUNCIA %d ---\n", d->id);
+                    printf("Descricao: %s\n", d->descricao);
+                    printf("Zona     : %s\n", d->zona);
+                    printf("Gravidade: %d\n", d->gravidade);
+                    printf("Data     : %s\n", d->data);
+                    printf("Estado   : %s\n", d->estado);
+				}
+				else
+				printf("Denuncia %d nao encontrada \n", id);
+            	break;
+			}  
 
             case 3:
-                break;
+            {
+            	int id;
+            	char novo_estado[20];
+            	  printf("ID da denuncia: ");
+                scanf("%d", &id);
+ 
+                Denuncia *d = PesquisarNaBTree(bt, id);
+                if (d != NULL)
+                {
+                    printf("Estado actual: %s\n", d->estado);
+                    printf("Novo estado (pendente/em_analise/resolvida/arquivada): ");
+                    scanf(" %[^\n]", novo_estado);
+                    AdicionarHistorico(hist, id, d->estado, novo_estado, d->data);
+                    strcpy(d->estado, novo_estado);
+                    printf("Estado actualizado com sucesso.\n");
+                }
+                else
+                    printf("Denuncia %d nao encontrada.\n", id);
+            	break;
+			}   
 
             case 4:
-                break;
-
+            	ZonasCriticas(g);
+            break;
+           
             case 5:
-                break;
+             {
+                int id_zona;
+                printf("ID da zona: ");
+                scanf("%d", &id_zona);
+                if (id_zona >= 0 && id_zona < g->n_zonas)
+                {
+                    Aresta *a = g->adjacentes[id_zona];
+                    printf("\n=== CONEXOES DA ZONA '%s' ===\n", g->zonas[id_zona].nome);
+                    if (a == NULL)
+                        printf("  Sem conexoes.\n");
+                    while (a != NULL)
+                    {
+                        printf("  -> %s (peso: %d)\n", g->zonas[a->id_destino].nome, a->peso);
+                        a = a->prox;
+                    }
+                }
+                else
+                    printf("Zona invalida.\n");
+                    break;
+            }
 
             case 6:
-                break;
+           {
+           	int id;
+           	printf("ID da denuncia:  ");
+           	scanf("%d", &id);
+           	ImprimirHistorico(*hist, id);
+           	break;
+		   }
 
             case 7:
-                break;
+           {
+           	int id;
+           	printf("ID da denuncia:  ");
+           	scanf("%d", &id);
+           	RemoverNaBTree(bt, id);
+           	break;
+		   }
 
             case 8:
+            	ImprimirUtilizador(*utilizadores);
                 break;
 
             case 0:
+            	printf("A guardar dados...\n");
+                GuardarDenuncias(bt, "denuncias.txt");
+                GuardarZonas(g, "zonas.txt");
+                GuardarUtilizadores(*utilizadores, "utilizadores.txt");
                 printf("Saindo do programa\n");
+                break;
+                
+            default:
+               	printf("Opcao invalida\n");
                 break;
         }
     } while (op != 0);

@@ -4,23 +4,24 @@
 
 // Função auxiliar recursiva que percorre a B-Tree e escreve cada denúncia no ficheiro. 
 
-void GuardarDenunciasRec(NoBTree *node, FILE *f) {
-    if (node == NULL) return;
+void GuardarDenunciasRec(NoBTree *no, FILE *f) {
+	int i;
+    if (no == NULL) return;
 
-    for (int i = 0; i < node->n_chaves; i++) {
+    for (i = 0; i < no->n_chaves; i++) {
         fprintf(f, "%d;%s;%s;%d;%s;%s\n",
-            node->dados[i].id,
-            node->dados[i].descricao,
-            node->dados[i].zona,
-            node->dados[i].gravidade,
-            node->dados[i].data,
-            node->dados[i].estado
+            no->dados[i].id,
+            no->dados[i].descricao,
+            no->dados[i].zona,
+            no->dados[i].gravidade,
+            no->dados[i].data,
+            no->dados[i].estado
         );
     }
 
-    if (!node->folha) {
-        for (int i = 0; i <= node->n_chaves; i++) {
-            GuardarDenunciasRec(node->filhos[i], f);
+    if (!no->folha) {
+        for (i = 0; i <= no->n_chaves; i++) {
+            GuardarDenunciasRec(no->filhos[i], f);
         }
     }
 }
@@ -103,10 +104,11 @@ NoUtilizador *CarregarUtilizadores(const char *nome_ficheiro) {
 // Função para guardar todas as zonas no ficheiro
 
 void GuardarZonas(Grafo *g, const char *nome_ficheiro) {
+	int i;
     FILE *f = fopen(nome_ficheiro, "w");
     if (f == NULL) return;
 
-    for (int i = 0; i < g->n_zonas; i++) {
+    for (i = 0; i < g->n_zonas; i++) {
         fprintf(f, "%d;%s;%d;%d\n",
             g->zonas[i].id,
             g->zonas[i].nome,
@@ -141,10 +143,11 @@ void CarregarZonas(Grafo *g, const char *nome_ficheiro) {
 // Função para guardar as conexões no ficheiro
 
 void GuardarConexoes(Grafo *g, const char *nome_ficheiro) {
+	int i;
     FILE *f = fopen(nome_ficheiro, "w");
     if (f == NULL) return;
 
-    for (int i = 0; i < g->n_zonas; i++) {
+    for (i = 0; i < g->n_zonas; i++) {
         Aresta *a = g->adjacentes[i];
 
         while (a != NULL) {
