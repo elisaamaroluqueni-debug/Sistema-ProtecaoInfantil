@@ -4,8 +4,11 @@
 #include <time.h>
 #include "Sistema.h"
 
+<<<<<<< HEAD
 int main(void) {
     srand((unsigned int)time(NULL));   /* inicializar gerador de números aleatórios */
+=======
+>>>>>>> 0d98d9748f6b1635fe302898fe7b218e0919da7f
 
     BTree        *bt           = criarBTree();
     Grafo        *g            = CriarGrafo();
