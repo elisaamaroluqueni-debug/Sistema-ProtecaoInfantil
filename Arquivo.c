@@ -1,227 +1,181 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "Sistema.h"
 
-// Função auxiliar recursiva que percorre a B-Tree e escreve cada denúncia no ficheiro. 
-
-void GuardarDenunciasRec(NoBTree *no, FILE *f) {
-	int i;
+/* =========================================================
+   DENUNCIAS
+   Formato novo:
+   id;descricao;zona;gravidade;data;estado;tipo_violencia;nome_denunciante;telefone;morada
+   ========================================================= */
+static void GuardarDenunciasRec(NoBTree *no, FILE *f) {
+    int i;
     if (no == NULL) return;
-
     for (i = 0; i < no->n_chaves; i++) {
-        fprintf(f, "%d;%s;%s;%d;%s;%s\n",
+        fprintf(f, "%d;%s;%s;%d;%s;%s;%s;%s;%s;%s\n",
             no->dados[i].id,
             no->dados[i].descricao,
             no->dados[i].zona,
             no->dados[i].gravidade,
             no->dados[i].data,
-            no->dados[i].estado
-        );
+            no->dados[i].estado,
+            no->dados[i].tipo_violencia,
+            no->dados[i].nome_denunciante,
+            no->dados[i].telefone,
+            no->dados[i].morada);
     }
-
-    if (!no->folha) {
-        for (i = 0; i <= no->n_chaves; i++) {
+    if (!no->folha)
+        for (i = 0; i <= no->n_chaves; i++)
             GuardarDenunciasRec(no->filhos[i], f);
-        }
-    }
 }
-// Função principal que cria/abre o ficheiro e guarda todas as denúncias.
-
 void GuardarDenuncias(BTree *bt, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "w");
-    if (f == NULL) return;
-
+    if (!f) return;
     GuardarDenunciasRec(bt->raiz, f);
-
     fclose(f);
 }
-
-// Função para guardar todas as zonas num ficheiro.
-
 void CarregarDenuncias(BTree *bt, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "r");
-    if (f == NULL) return;
-
+    if (!f) return;
     Denuncia d;
+    char linha[900];
+    while (fgets(linha, sizeof(linha), f) != NULL) {
+        memset(&d, 0, sizeof(d));
 
-    while (fscanf(f, "%d;%255[^;];%63[^;];%d;%10[^;];%19[^\n]\n",
-        &d.id,
-        d.descricao,
-        d.zona,
-        &d.gravidade,
-        d.data,
-        d.estado) == 6) {
-
-        InserirNaBTree(bt, d);
+        if (sscanf(linha, "%d;%255[^;];%63[^;];%d;%10[^;];%19[^;];%49[^;];%99[^;];%9[^;];%149[^\n]",
+                   &d.id, d.descricao, d.zona, &d.gravidade,
+                   d.data, d.estado, d.tipo_violencia,
+                   d.nome_denunciante, d.telefone, d.morada) == 10) {
+            InserirNaBTree(bt, d);
+        } else if (sscanf(linha, "%d;%255[^;];%63[^;];%d;%10[^;];%19[^;];%99[^;];%9[^;];%149[^\n]",
+                          &d.id, d.descricao, d.zona, &d.gravidade,
+                          d.data, d.estado,
+                          d.nome_denunciante, d.telefone, d.morada) == 9) {
+            strcpy(d.tipo_violencia, "Nao informado");
+            InserirNaBTree(bt, d);
+        }
     }
-
     fclose(f);
 }
-// Função guardar todos os utilizadores num ficheiro. 
 
+/* =========================================================
+   UTILIZADORES
+   Formato: id;nome;perfil;telefone;morada;senha
+   ========================================================= */
 void GuardarUtilizadores(NoUtilizador *lista, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "w");
-    if (f == NULL) return;
-
-    NoUtilizador *atual = lista;
-
-    while (atual != NULL) {
-        fprintf(f, "%d;%s;%s;%s\n",
-            atual->dados.id,
-            atual->dados.nome,
-            atual->dados.perfil,
-            atual->dados.contacto
-        );
-
-        atual = atual->prox;
+    if (!f) return;
+    while (lista != NULL) {
+        fprintf(f, "%d;%s;%s;%s;%s;%s\n",
+            lista->dados.id,
+            lista->dados.nome,
+            lista->dados.perfil,
+            lista->dados.telefone,
+            lista->dados.morada,
+            lista->dados.senha);
+        lista = lista->prox;
     }
-
     fclose(f);
 }
-
-// Função para Carregar os utilizadores de um ficheiro.
-
 NoUtilizador *CarregarUtilizadores(const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "r");
-    if (f == NULL) return NULL;
-
+    if (!f) return NULL;
     NoUtilizador *lista = NULL;
     Utilizador u;
-
-    while (fscanf(f, "%d;%99[^;];%19[^;];%49[^\n]\n",
-        &u.id,
-        u.nome,
-        u.perfil,
-        u.contacto) == 4) {
-
+    char linha[500];
+    while (fgets(linha, sizeof(linha), f) != NULL) {
+        memset(&u, 0, sizeof(u));
+        if (sscanf(linha, "%d;%99[^;];%19[^;];%9[^;];%149[^;];%49[^\n]",
+                   &u.id, u.nome, u.perfil,
+                   u.telefone, u.morada, u.senha) < 5)
+            continue;
         lista = AdicionarUtilizador(lista, u);
     }
-
     fclose(f);
     return lista;
 }
 
-// Função para guardar todas as zonas no ficheiro
-
+/* =========================================================
+   ZONAS
+   ========================================================= */
 void GuardarZonas(Grafo *g, const char *nome_ficheiro) {
-	int i;
+    int i;
     FILE *f = fopen(nome_ficheiro, "w");
-    if (f == NULL) return;
-
-    for (i = 0; i < g->n_zonas; i++) {
+    if (!f) return;
+    for (i = 0; i < g->n_zonas; i++)
         fprintf(f, "%d;%s;%d;%d\n",
-            g->zonas[i].id,
-            g->zonas[i].nome,
-            g->zonas[i].n_casos,
-            g->zonas[i].nivel_risco
-        );
-    }
-
+            g->zonas[i].id, g->zonas[i].nome,
+            g->zonas[i].n_casos, g->zonas[i].nivel_risco);
     fclose(f);
 }
-
-// Função para carregar todas as zonas no ficheiro
-
 void CarregarZonas(Grafo *g, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "r");
-    if (f == NULL) return;
-
+    if (!f) return;
     Zona z;
-
     while (fscanf(f, "%d;%99[^;];%d;%d\n",
-        &z.id,
-        z.nome,
-        &z.n_casos,
-        &z.nivel_risco) == 4) {
-
+                  &z.id, z.nome, &z.n_casos, &z.nivel_risco) == 4)
         g->zonas[g->n_zonas++] = z;
-    }
-
     fclose(f);
 }
 
-// Função para guardar as conexões no ficheiro
-
+/* =========================================================
+   CONEXÕES
+   ========================================================= */
 void GuardarConexoes(Grafo *g, const char *nome_ficheiro) {
-	int i;
+    int i;
     FILE *f = fopen(nome_ficheiro, "w");
-    if (f == NULL) return;
-
+    if (!f) return;
     for (i = 0; i < g->n_zonas; i++) {
         Aresta *a = g->adjacentes[i];
-
         while (a != NULL) {
-            fprintf(f, "%d;%d;%d\n",
-                i,
-                a->id_destino,
-                a->peso
-            );
-
+            if (i < a->id_destino)
+                fprintf(f, "%d;%d;%d\n", i, a->id_destino, a->peso);
             a = a->prox;
         }
     }
-
     fclose(f);
 }
-
-// Função para carregar todas as conexões no ficheiro
-
 void CarregarConexoes(Grafo *g, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "r");
-    if (f == NULL) return;
-
+    if (!f) return;
     int origem, destino, peso;
-
-    while (fscanf(f, "%d;%d;%d\n",
-        &origem,
-        &destino,
-        &peso) == 3) {
-
-        ConectarZonas(g, origem, destino, peso);
+    while (fscanf(f, "%d;%d;%d\n", &origem, &destino, &peso) == 3) {
+        int existe = 0;
+        Aresta *a;
+        if (origem < 0 || destino < 0 || origem >= g->n_zonas || destino >= g->n_zonas)
+            continue;
+        a = g->adjacentes[origem];
+        while (a != NULL) {
+            if (a->id_destino == destino) { existe = 1; break; }
+            a = a->prox;
+        }
+        if (!existe)
+            ConectarZonas(g, origem, destino, peso);
     }
-
     fclose(f);
 }
 
-// Funcão para guardar o historico no ficheiro
-
+/* =========================================================
+   HISTORICO
+   ========================================================= */
 void GuardarHistorico(Historico *lista, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "w");
-    if (f == NULL) return;
-
-    Historico *atual = lista;
-
-    while (atual != NULL) {
+    if (!f) return;
+    while (lista != NULL) {
         fprintf(f, "%d;%s;%s;%s\n",
-            atual->id_denuncia,
-            atual->estado_anterior,
-            atual->estado_atual,
-            atual->data
-        );
-
-        atual = atual->prox;
+            lista->id_denuncia, lista->estado_anterior,
+            lista->estado_atual, lista->data);
+        lista = lista->prox;
     }
-
     fclose(f);
 }
-
-// Função para carregar o historico no ficheiro
-
 void CarregarHistorico(Historico **lista, const char *nome_ficheiro) {
     FILE *f = fopen(nome_ficheiro, "r");
-    if (f == NULL) return;
-
+    if (!f) return;
     int id;
     char anterior[20], atual[20], data[30];
-
     while (fscanf(f, "%d;%19[^;];%19[^;];%29[^\n]\n",
-        &id,
-        anterior,
-        atual,
-        data) == 4) {
-
+                  &id, anterior, atual, data) == 4)
         AdicionarHistorico(lista, id, anterior, atual, data);
-    }
-
     fclose(f);
 }
